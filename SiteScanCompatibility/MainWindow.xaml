@@ -1,0 +1,454 @@
+﻿<Window x:Class="SiteScanCompatibility.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:local="clr-namespace:SiteScanCompatibility"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:SiteScanCompatibility.ViewModel"
+        Title="Edge Compatibility Site Scan"
+        MinWidth="800"
+        MinHeight="480"
+        mc:Ignorable="d">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    Width="120"
+                    Height="23"
+                    Margin="10"
+                    Background="{x:Null}"
+                    Command="{Binding ClickCommand,
+                                      Mode=OneWay}"
+                    CommandParameter="LoadFile"
+                    Content="Load Sites List File"
+                    IsEnabled="{Binding NotScanning}" />
+
+            <TextBlock Grid.Column="1"
+                       Margin="10"
+                       VerticalAlignment="Center"
+                       Text="{Binding FileName}" />
+
+            <StackPanel Grid.Column="2"
+                        Margin="10"
+                        Orientation="Horizontal">
+                <Button Margin="0,0,20,0"
+                        Background="{x:Null}"
+                        Command="{Binding ClickCommand,
+                                          Mode=OneWay}"
+                        CommandParameter="ClearList"
+                        IsEnabled="{Binding NotScanning}">
+                    <StackPanel Margin="5,0,5,0" Orientation="Horizontal">
+                        <TextBlock Text="Clear List" />
+                        <TextBlock Margin="2,2,0,0"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe MDL2 Assets"
+                                   Text=" " />
+                    </StackPanel>
+                </Button>
+                <Grid>
+                    <ToggleButton x:Name="button"
+                                  Width="23"
+                                  Height="23"
+                                  Background="{x:Null}"
+                                  BorderThickness="0"
+                                  Content=""
+                                  FontFamily="Segoe MDL2 Assets"
+                                  FontSize="16"
+                                  IsEnabled="{Binding NotScanning}"
+                                  Padding="0" />
+
+                    <Popup AllowsTransparency="True"
+                           HorizontalOffset="-400"
+                           IsOpen="{Binding IsChecked,
+                                            ElementName=button}"
+                           StaysOpen="False"
+                           VerticalOffset="10">
+                        <StackPanel Width="420"
+                                    Margin="4"
+                                    Background="White">
+                            <StackPanel.Effect>
+                                <DropShadowEffect BlurRadius="10"
+                                                  Opacity="0.7"
+                                                  ShadowDepth="1"
+                                                  Color="Gray" />
+                            </StackPanel.Effect>
+
+                            <Grid Margin="8" Background="White">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0"
+                                           Margin="0,5,0,10"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           FontSize="16.5"
+                                           Text="Scan Site Server" />
+
+                                <Grid Grid.Row="1" Margin="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               HorizontalAlignment="Stretch"
+                                               TextWrapping="Wrap">
+                                        Enter the static_code_scan server (default is localhost:1337).
+                                    </TextBlock>
+
+                                    <TextBox Grid.Row="1"
+                                             Height="23"
+                                             Margin="0,10,0,0"
+                                             Text="{Binding ScanSiteServer}" />
+
+                                    <CheckBox Grid.Row="2"
+                                              Height="23"
+                                              Margin="0,10,0,0"
+                                              Content="Use 'www' for domain name"
+                                              IsChecked="{Binding IsUsingWWW,
+                                                                  FallbackValue=True}" />
+
+                                </Grid>
+                            </Grid>
+
+                            <Button Grid.Row="1"
+                                    Width="75"
+                                    Margin="0,0,20,20"
+                                    HorizontalAlignment="Right"
+                                    Content="Close">
+                                <Button.Triggers>
+                                    <EventTrigger RoutedEvent="Button.Click">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <BooleanAnimationUsingKeyFrames Storyboard.TargetName="button" Storyboard.TargetProperty="IsChecked">
+                                                    <DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="False" />
+                                                </BooleanAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </StackPanel>
+                    </Popup>
+                </Grid>
+            </StackPanel>
+
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <DataGrid x:Name="data"
+                      Margin="10"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      ItemsSource="{Binding Items}"
+                      SelectionMode="Extended">
+                <i:Interaction.Behaviors>
+                    <local:MultiSelectBehavior SelectCommand="{Binding ExtendedClickCommand, Mode=OneWay}" />
+                </i:Interaction.Behaviors>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="40"
+                                            CanUserSort="True"
+                                            SortMemberPath="Id">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock Text="#" />
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <TextBlock Margin="5"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Id}"
+                                               TextAlignment="Center" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="120*"
+                                            CanUserSort="True"
+                                            SortMemberPath="SiteHost">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock Text="Domain" />
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <TextBlock Margin="5"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding SiteHost}" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="80"
+                                            CanUserSort="True"
+                                            SortMemberPath="BrowserDetection">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">
+                                                Browser
+                                                <LineBreak />
+                                                Detection
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <CheckBox Margin="5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding BrowserDetection}"
+                                              IsEnabled="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="80"
+                                            CanUserSort="True"
+                                            SortMemberPath="CSSPrefix">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">CSS Prefix</TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <CheckBox Margin="5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding CSSPrefix}"
+                                              IsEnabled="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="80"
+                                            CanUserSort="True"
+                                            SortMemberPath="Edge">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">Edge</TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <CheckBox Margin="5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding Edge}"
+                                              IsEnabled="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="80"
+                                            CanUserSort="True"
+                                            SortMemberPath="JSLib">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">JS Library</TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <CheckBox Margin="5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding JSLib}"
+                                              IsEnabled="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="80"
+                                            CanUserSort="True"
+                                            SortMemberPath="PluginFree">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">Plugin Free</TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <CheckBox Margin="5"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              IsChecked="{Binding PluginFree}"
+                                              IsEnabled="False" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Width="90"
+                                            CanUserSort="True"
+                                            SortMemberPath="ProcessTime">
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <TextBlock TextAlignment="Center">
+                                                Process Time
+                                                <LineBreak />
+                                                <Run FontSize="10" Text="(in seconds)" />
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Background="{Binding BgColor}">
+                                    <TextBlock Margin="5"
+                                               HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"
+                                               Text="{Binding ProcessTime}" />
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <Grid Grid.Row="3" Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <ProgressBar Width="200"
+                             Height="23"
+                             HorizontalAlignment="Left"
+                             Value="{Binding Percentage}" />
+                <TextBlock Margin="10,0,0,0" VerticalAlignment="Center">
+                    <Run Text="{Binding Percentage}" />
+                    <Run Text="%" />
+                </TextBlock>
+                <TextBlock Margin="10,0,0,0"
+                           VerticalAlignment="Center"
+                           Text="{Binding ItemBeingScan}" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1"
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal">
+                <Button Width="100"
+                        Command="{Binding ClickCommand,
+                                          Mode=OneWay}"
+                        CommandParameter="RunScan"
+                        Content="Run Scan"
+                        IsEnabled="{Binding NotScanning}" />
+                <Button Width="100"
+                        Margin="10,0,0,0"
+                        Command="{Binding ClickCommand,
+                                          Mode=OneWay}"
+                        CommandParameter="CancelScan"
+                        Content="Stop"
+                        Visibility="{Binding ShowStop,
+                                             FallbackValue=Collapsed}" />
+                <Button Width="100"
+                        Margin="10,0,0,0"
+                        Command="{Binding ClickCommand,
+                                          Mode=OneWay}"
+                        CommandParameter="Export"
+                        Content="Export"
+                        IsEnabled="{Binding NotScanning}"
+                        Visibility="{Binding ShowExport,
+                                             FallbackValue=Collapsed}" />
+            </StackPanel>
+
+        </Grid>
+
+    </Grid>
+</Window>
