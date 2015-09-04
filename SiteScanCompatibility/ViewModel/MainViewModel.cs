@@ -31,14 +31,14 @@ namespace SiteScanCompatibility.ViewModel
 
         private string _fileName = "[No File]";
         private string _itemBeingScan;
-        private int    _percentatge;
-        private bool   _notScanning = true;
-        private bool   _inProgress = false;
-        private bool   _isUsingWWW = true;
-        private IList  _selectedItems;
+        private int _percentatge;
+        private bool _notScanning = true;
+        private bool _inProgress = false;
+        private bool _isUsingWWW = true;
+        private IList _selectedItems;
 
         // Change this default static_code_scan to your host server
-        private string _scanSiteServer = "localhost:1337";  
+        private string _scanSiteServer = "localhost:1337";
 
         private Visibility _showExport = Visibility.Collapsed;
         private Visibility _showStop = Visibility.Collapsed;
@@ -415,6 +415,12 @@ namespace SiteScanCompatibility.ViewModel
                 count++;
             }
 
+            if (_selectedItems != null)
+            {
+                _selectedItems.Clear();
+                _selectedItems = null;
+            }
+
             await DispatcherHelper.RunAsync(() =>
             {
                 ItemBeingScan = "[Scanning Done!]";
@@ -478,7 +484,7 @@ namespace SiteScanCompatibility.ViewModel
             if (!isGoodDomain) return String.Empty;
 
             return uriResult.Host;
-        } 
+        }
         #endregion
     }
 }
